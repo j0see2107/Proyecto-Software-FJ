@@ -1,53 +1,58 @@
-2026-11-22 14:05:44 | INFO     | ===== Inicio del sistema Software FJ =====
-2026-11-22 14:05:44 | INFO     | Cliente registrado: Cliente C4FE2C3F | Ana Torres | ana.torres@mail.com | Tel: 0991234567 | Doc: 1712345678 | Reservas: 0
-2026-11-22 14:05:44 | INFO     | Cliente registrado: Cliente 9AD30AB9 | Luis Pérez | luis.perez@fj.io | Tel: +573987654321 | Doc: 0923456789 | Reservas: 0
-2026-11-22 14:05:44 | ERROR    | Registro de cliente 'Carla Ruiz' -> ValidacionError: [FJ-100] Correo electrónico inválido: 'carla@@mail'.
-2026-11-22 14:05:44 | ERROR    | Registro de cliente 'Pedro 123' -> ValidacionError: [FJ-100] El nombre no puede contener dígitos.
-2026-11-22 14:05:44 | ERROR    | Registro de cliente 'Ana T. Duplicada' -> ClienteDuplicadoError: [FJ-201] Ya existe un cliente con documento 1712345678.
-2026-11-22 14:05:44 | INFO     | Servicio registrado: Sala 'Sala Pamplona' | capacidad 10 personas | $25.00/hora | con proyector
-2026-11-22 14:05:44 | INFO     | Servicio registrado: Equipo 'Laptop Dell' (Portátil) | $12.50/día | stock 2 | depósito $50.00
-2026-11-22 14:05:44 | INFO     | Servicio registrado: Asesoría 'Asesoría Cloud' en AWS | nivel experto | $40.00/hora base
-2026-11-22 14:05:44 | INFO     | Servicio registrado: Asesoría 'Asesoría Legacy' en COBOL | nivel senior | $30.00/hora base
-2026-11-22 14:05:44 | ERROR    | Creación de servicio ReservaSala -> ValidacionError: [FJ-100] El precio base debe ser positivo (-10.0).
-2026-11-22 14:05:44 | ERROR    | Creación de servicio AsesoriaEspecializada -> ValidacionError: [FJ-100] Nivel 'master' inválido. Use: junior, senior, experto.
-2026-11-22 14:05:44 | ERROR    | Creación de servicio AlquilerEquipo -> ValidacionError: [FJ-100] Parámetros faltantes o incorrectos para AlquilerEquipo. | CAUSA: TypeError: AlquilerEquipo.__init__() missing 3 required positional arguments: 'precio_dia', 'tipo_equipo', and 'stock'
-2026-11-22 14:05:44 | INFO     | Reserva 0C0401A9 CONFIRMADA | Ana Torres (1712345678) | Sala Pamplona | total $124.20
-2026-11-22 14:05:44 | INFO     | Reserva creada: Reserva 0C0401A9 | Ana Torres (1712345678) | Sala Pamplona | 3 hora(s) | estado CONFIRMADA | total $124.20
-2026-11-22 14:05:44 | DEBUG    | Intento de reserva finalizado: Reserva de 'Sala Pamplona' para doc 1712345678
-2026-11-22 14:05:44 | ERROR    | Reserva de 'Laptop Dell' para doc 0923456789 -> ServicioNoDisponibleError: [FJ-301] El servicio 'Laptop Dell' no está disponible.
-2026-11-22 14:05:44 | DEBUG    | Intento de reserva finalizado: Reserva de 'Laptop Dell' para doc 0923456789
-2026-11-22 14:05:44 | ERROR    | Reserva de 'Sala Pamplona' para doc 9999999999 -> ClienteNoEncontradoError: [FJ-202] Cliente con documento 9999999999 no existe.
-2026-11-22 14:05:44 | DEBUG    | Intento de reserva finalizado: Reserva de 'Sala Pamplona' para doc 9999999999
-2026-11-22 14:05:44 | ERROR    | Reserva de 'Laptop Dell' para doc 1712345678 -> ServicioNoDisponibleError: [FJ-301] Stock insuficiente de 'Laptop Dell': solicitado 1, disponible 0.
-2026-11-22 14:05:44 | DEBUG    | Intento de reserva finalizado: Reserva de 'Laptop Dell' para doc 1712345678
-2026-11-22 14:05:44 | ERROR    | Reserva de 'Asesoría Legacy' para doc 1712345678 -> ServicioNoDisponibleError: [FJ-301] El servicio 'Asesoría Legacy' no está disponible.
-2026-11-22 14:05:44 | DEBUG    | Intento de reserva finalizado: Reserva de 'Asesoría Legacy' para doc 1712345678
-2026-11-22 14:05:44 | ERROR    | Reserva de 'Sala Pamplona' para doc 0923456789 -> ReservaInvalidaError: [FJ-401] Parámetros de reserva incorrectos para 'Sala Pamplona'. | CAUSA: ValidacionError: [FJ-100] La sala se reserva entre 1 y 12 horas (solicitado: 20).
-2026-11-22 14:05:44 | DEBUG    | Intento de reserva finalizado: Reserva de 'Sala Pamplona' para doc 0923456789
-2026-11-22 14:05:44 | ERROR    | Reserva de 'Asesoría Cloud' para doc 0923456789 -> ReservaInvalidaError: [FJ-401] No fue posible calcular el costo de la reserva 0848D30B. | CAUSA: CalculoError: [FJ-500] Descuento inconsistente: 150 %.
-2026-11-22 14:05:44 | DEBUG    | Intento de reserva finalizado: Reserva de 'Asesoría Cloud' para doc 0923456789
-2026-11-22 14:05:44 | INFO     | Reserva 896B8268 CONFIRMADA | Luis Pérez (0923456789) | Asesoría Cloud | total $368.00
-2026-11-22 14:05:44 | INFO     | Reserva creada: Reserva 896B8268 | Luis Pérez (0923456789) | Asesoría Cloud | 4 hora(s) | estado CONFIRMADA | total $368.00
-2026-11-22 14:05:44 | DEBUG    | Intento de reserva finalizado: Reserva de 'Asesoría Cloud' para doc 0923456789
-2026-11-22 14:05:44 | INFO     | Reserva 0C0401A9 PROCESADA por $124.20
-2026-11-22 14:05:44 | DEBUG    | Fin de intento de procesamiento de reserva 0C0401A9 (estado final: PROCESADA)
-2026-11-22 14:05:44 | INFO     | Reserva procesada: Reserva 0C0401A9 | Ana Torres (1712345678) | Sala Pamplona | 3 hora(s) | estado PROCESADA | total $124.20
-2026-11-22 14:05:44 | DEBUG    | Fin de intento de procesamiento de reserva 0C0401A9 (estado final: PROCESADA)
-2026-11-22 14:05:44 | ERROR    | Procesamiento de reserva -> OperacionNoPermitidaError: [FJ-402] Solo se procesan reservas CONFIRMADAS (actual: PROCESADA).
-2026-11-22 14:05:44 | ERROR    | Procesamiento de reserva -> ReservaError: [FJ-400] No se puede procesar una reserva inexistente (None).
-2026-11-22 14:05:44 | ERROR    | Cancelación de reserva -> ReservaError: [FJ-400] No se puede cancelar una reserva inexistente (None).
-2026-11-22 14:05:44 | ERROR    | Cancelación de reserva -> OperacionNoPermitidaError: [FJ-402] La reserva 0C0401A9 ya fue PROCESADA y no puede cancelarse.
-2026-11-22 14:05:44 | ERROR    | Reserva de 'Laptop Dell' para doc 1712345678 -> ServicioNoDisponibleError: [FJ-301] Stock insuficiente de 'Laptop Dell': solicitado 1, disponible 0.
-2026-11-22 14:05:44 | DEBUG    | Intento de reserva finalizado: Reserva de 'Laptop Dell' para doc 1712345678
-2026-11-22 14:05:44 | ERROR    | Procesamiento de reserva -> ReservaError: [FJ-400] No se puede procesar una reserva inexistente (None).
-2026-11-22 14:05:44 | INFO     | Reserva 896B8268 PROCESADA por $368.00
-2026-11-22 14:05:44 | DEBUG    | Fin de intento de procesamiento de reserva 896B8268 (estado final: PROCESADA)
-2026-11-22 14:05:44 | INFO     | Reserva procesada: Reserva 896B8268 | Luis Pérez (0923456789) | Asesoría Cloud | 4 hora(s) | estado PROCESADA | total $368.00
-2026-11-22 14:05:44 | INFO     | Cotización 'Sala Pamplona' x2 (param=None) = $92.00
-2026-11-22 14:05:44 | INFO     | Cotización 'Sala Pamplona' x2 (param=25) = $69.00
-2026-11-22 14:05:44 | INFO     | Cotización 'Sala Pamplona' x2 (param={'iva': 0.12, 'cupon': 'FJ10'}) = $80.64
-2026-11-22 14:05:44 | ERROR    | Cotización de 'Sala Pamplona' con 'veinte' -> CalculoError: [FJ-500] Tipo de parámetro no soportado: str.
-2026-11-22 14:05:44 | ERROR    | Cotización de 'Asesoría Cloud' con 120.0 -> CalculoError: [FJ-500] Descuento inconsistente: 120.0 %.
-2026-11-22 14:05:44 | ERROR    | Cálculo con impuesto -> CalculoError: [FJ-500] IVA fuera de rango: 1.5.
-2026-11-22 14:05:44 | INFO     | Reporte final | clientes=2 servicios=4 reservas=2 exitosas=13 fallidas=20
-2026-11-22 14:05:44 | INFO     | ===== Fin del sistema Software FJ =====
+2026-11-22 16:21:07 | INFO     | ===== Inicio del sistema Software FJ =====
+2026-11-22 16:21:07 | INFO     | Cliente registrado: Cliente 968E8985 | Ana Torres | ana.torres@mail.com | Tel: 0991234567 | Doc: 1712345678 | Reservas: 0
+2026-11-22 16:21:07 | INFO     | Cliente registrado: Cliente F09E93A4 | Luis Pérez | luis.perez@fj.io | Tel: +573287654321 | Doc: 0923456789 | Reservas: 0
+2026-11-22 16:21:07 | ERROR    | Registro de cliente 'Carla Ruiz' -> ValidacionError: [FJ-100] Correo electrónico inválido: 'carla@@mail'.
+2026-11-22 16:21:07 | ERROR    | Registro de cliente 'Pedro 123' -> ValidacionError: [FJ-100] El nombre no puede contener dígitos.
+2026-11-22 16:21:07 | ERROR    | Registro de cliente 'Ana T. Duplicada' -> ClienteDuplicadoError: [FJ-201] Ya existe un cliente con documento 1712345678.
+2026-11-22 16:21:07 | INFO     | Servicio registrado: Sala 'Sala Pamplona' | capacidad 10 personas | $25.00/hora | con proyector
+2026-11-22 16:21:07 | INFO     | Servicio registrado: Equipo 'Laptop Dell' (Portátil) | $12.50/día | stock 2 | depósito $50.00
+2026-11-22 16:21:07 | INFO     | Servicio registrado: Asesoría 'Asesoría Cloud' en AWS | nivel experto | $40.00/hora base
+2026-11-22 16:21:07 | INFO     | Servicio registrado: Asesoría 'Asesoría Legacy' en COBOL | nivel senior | $30.00/hora base
+2026-11-22 16:21:07 | ERROR    | Creación de servicio ReservaSala -> ValidacionError: [FJ-100] El precio base debe ser positivo (-10.0).
+2026-11-22 16:21:07 | ERROR    | Creación de servicio AsesoriaEspecializada -> ValidacionError: [FJ-100] Nivel 'master' inválido. Use: junior, senior, experto.
+2026-11-22 16:21:07 | ERROR    | Creación de servicio AlquilerEquipo -> ValidacionError: [FJ-100] Parámetros faltantes o incorrectos para AlquilerEquipo. | CAUSA: TypeError: AlquilerEquipo.__init__() missing 3 required positional arguments: 'precio_dia', 'tipo_equipo', and 'stock'
+2026-11-22 16:21:07 | INFO     | Reserva D7019C50 CONFIRMADA | Ana Torres (1712345678) | Sala Pamplona | total $124.20
+2026-11-22 16:21:07 | INFO     | Reserva creada: Reserva D7019C50 | Ana Torres (1712345678) | Sala Pamplona | 3 hora(s) | estado CONFIRMADA | total $124.20
+2026-11-22 16:21:07 | DEBUG    | Intento de reserva finalizado: Reserva de 'Sala Pamplona' para doc 1712345678
+2026-11-22 16:21:07 | INFO     | Reserva E34B423D CONFIRMADA | Luis Pérez (0923456789) | Laptop Dell | total $232.87
+2026-11-22 16:21:07 | INFO     | Reserva creada: Reserva E34B423D | Luis Pérez (0923456789) | Laptop Dell | 7 día(s) | estado CONFIRMADA | total $232.87
+2026-11-22 16:21:07 | DEBUG    | Intento de reserva finalizado: Reserva de 'Laptop Dell' para doc 0923456789
+2026-11-22 16:21:07 | ERROR    | Reserva de 'Sala Pamplona' para doc 9999999999 -> ClienteNoEncontradoError: [FJ-202] Cliente con documento 9999999999 no existe.
+2026-11-22 16:21:07 | DEBUG    | Intento de reserva finalizado: Reserva de 'Sala Pamplona' para doc 9999999999
+2026-11-22 16:21:07 | ERROR    | Reserva de 'Laptop Dell' para doc 1712345678 -> ServicioNoDisponibleError: [FJ-301] El servicio 'Laptop Dell' no está disponible.
+2026-11-22 16:21:07 | DEBUG    | Intento de reserva finalizado: Reserva de 'Laptop Dell' para doc 1712345678
+2026-11-22 16:21:07 | ERROR    | Reserva de 'Asesoría Legacy' para doc 1712345678 -> ServicioNoDisponibleError: [FJ-301] El servicio 'Asesoría Legacy' no está disponible.
+2026-11-22 16:21:07 | DEBUG    | Intento de reserva finalizado: Reserva de 'Asesoría Legacy' para doc 1712345678
+2026-11-22 16:21:07 | ERROR    | Reserva de 'Sala Pamplona' para doc 0923456789 -> ReservaInvalidaError: [FJ-401] Parámetros de reserva incorrectos para 'Sala Pamplona'. | CAUSA: ValidacionError: [FJ-100] La sala se reserva entre 1 y 12 horas (solicitado: 20).
+2026-11-22 16:21:07 | DEBUG    | Intento de reserva finalizado: Reserva de 'Sala Pamplona' para doc 0923456789
+2026-11-22 16:21:07 | ERROR    | Reserva de 'Asesoría Cloud' para doc 0923456789 -> ReservaInvalidaError: [FJ-401] No fue posible calcular el costo de la reserva 53DC4C38. | CAUSA: CalculoError: [FJ-500] Descuento inconsistente: 150 %.
+2026-11-22 16:21:07 | DEBUG    | Intento de reserva finalizado: Reserva de 'Asesoría Cloud' para doc 0923456789
+2026-11-22 16:21:07 | INFO     | Reserva A4534CB6 CONFIRMADA | Luis Pérez (0923456789) | Asesoría Cloud | total $368.00
+2026-11-22 16:21:07 | INFO     | Reserva creada: Reserva A4534CB6 | Luis Pérez (0923456789) | Asesoría Cloud | 4 hora(s) | estado CONFIRMADA | total $368.00
+2026-11-22 16:21:07 | DEBUG    | Intento de reserva finalizado: Reserva de 'Asesoría Cloud' para doc 0923456789
+2026-11-22 16:21:07 | INFO     | Reserva D7019C50 PROCESADA por $124.20
+2026-11-22 16:21:07 | DEBUG    | Fin de intento de procesamiento de reserva D7019C50 (estado final: PROCESADA)
+2026-11-22 16:21:07 | INFO     | Reserva procesada: Reserva D7019C50 | Ana Torres (1712345678) | Sala Pamplona | 3 hora(s) | estado PROCESADA | total $124.20
+2026-11-22 16:21:07 | DEBUG    | Fin de intento de procesamiento de reserva D7019C50 (estado final: PROCESADA)
+2026-11-22 16:21:07 | ERROR    | Procesamiento de reserva -> OperacionNoPermitidaError: [FJ-402] Solo se procesan reservas CONFIRMADAS (actual: PROCESADA).
+2026-11-22 16:21:07 | ERROR    | Procesamiento de reserva -> ReservaError: [FJ-400] No se puede procesar una reserva inexistente (None).
+2026-11-22 16:21:07 | WARNING  | Reserva E34B423D CANCELADA | motivo: El cliente cambió de fecha
+2026-11-22 16:21:07 | INFO     | Reserva cancelada: Reserva E34B423D | Luis Pérez (0923456789) | Laptop Dell | 7 día(s) | estado CANCELADA | total $232.87
+2026-11-22 16:21:07 | ERROR    | Cancelación de reserva -> OperacionNoPermitidaError: [FJ-402] La reserva D7019C50 ya fue PROCESADA y no puede cancelarse.
+2026-11-22 16:21:07 | INFO     | Reserva 46FAFE7C CONFIRMADA | Ana Torres (1712345678) | Laptop Dell | total $86.25
+2026-11-22 16:21:07 | INFO     | Reserva creada: Reserva 46FAFE7C | Ana Torres (1712345678) | Laptop Dell | 2 día(s) | estado CONFIRMADA | total $86.25
+2026-11-22 16:21:07 | DEBUG    | Intento de reserva finalizado: Reserva de 'Laptop Dell' para doc 1712345678
+2026-11-22 16:21:07 | INFO     | Reserva 46FAFE7C PROCESADA por $86.25
+2026-11-22 16:21:07 | DEBUG    | Fin de intento de procesamiento de reserva 46FAFE7C (estado final: PROCESADA)
+2026-11-22 16:21:07 | INFO     | Reserva procesada: Reserva 46FAFE7C | Ana Torres (1712345678) | Laptop Dell | 2 día(s) | estado PROCESADA | total $86.25
+2026-11-22 16:21:07 | INFO     | Reserva A4534CB6 PROCESADA por $368.00
+2026-11-22 16:21:07 | DEBUG    | Fin de intento de procesamiento de reserva A4534CB6 (estado final: PROCESADA)
+2026-11-22 16:21:07 | INFO     | Reserva procesada: Reserva A4534CB6 | Luis Pérez (0923456789) | Asesoría Cloud | 4 hora(s) | estado PROCESADA | total $368.00
+2026-11-22 16:21:07 | INFO     | Cotización 'Sala Pamplona' x2 (param=None) = $92.00
+2026-11-22 16:21:07 | INFO     | Cotización 'Sala Pamplona' x2 (param=25) = $69.00
+2026-11-22 16:21:07 | INFO     | Cotización 'Sala Pamplona' x2 (param={'iva': 0.12, 'cupon': 'FJ10'}) = $80.64
+2026-11-22 16:21:07 | ERROR    | Cotización de 'Sala Pamplona' con 'veinte' -> CalculoError: [FJ-500] Tipo de parámetro no soportado: str.
+2026-11-22 16:21:07 | ERROR    | Cotización de 'Asesoría Cloud' con 120.0 -> CalculoError: [FJ-500] Descuento inconsistente: 120.0 %.
+2026-11-22 16:21:07 | ERROR    | Cálculo con impuesto -> CalculoError: [FJ-500] IVA fuera de rango: 1.5.
+2026-11-22 16:21:07 | INFO     | Reporte final | clientes=2 servicios=4 reservas=4 exitosas=17 fallidas=16
+2026-11-22 16:21:07 | INFO     | ===== Fin del sistema Software FJ =====
