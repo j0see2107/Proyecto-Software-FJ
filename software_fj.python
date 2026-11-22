@@ -733,22 +733,32 @@ class SistemaGestion:
 
     # ---------- Reservas ----------
     def crear_reserva(self, documento_cliente: str, nombre_servicio: str,
-                      duracion: int, descuento_pct: float = 0.0,
-                      cantidad_equipos: int = 1) -> Optional[Reserva]:
-        """try / except / finally con registro detallado."""
+                    duracion: int, descuento_pct: float = 0.0,
+                    cantidad_equipos: int = 1) -> Optional[Reserva]:
+        """try / except / finally con rollback de stock."""
         contexto = f"Reserva de '{nombre_servicio}' para doc {documento_cliente}"
         reserva: Optional[Reserva] = None
+        servicio: Optional[Servicio] = None
+        unidades_tomadas = 0
         try:
             cliente = self.buscar_cliente(documento_cliente)
             servicio = self.buscar_servicio(nombre_servicio)
+            # 1) Primero se valida disponibilidad y duración (constructor de Reserva)
+            reserva = Reserva(cliente, servicio, duracion, descuento_pct)
+            # 2) Luego se toma el stock (necesario antes de calcular el costo)
             if isinstance(servicio, AlquilerEquipo):
                 servicio.reservar_unidades(cantidad_equipos)
-            reserva = Reserva(cliente, servicio, duracion, descuento_pct)
+                unidades_tomadas = cantidad_equipos
+            # 3) Finalmente se confirma (calcula costo)
             reserva.confirmar()
         except SoftwareFJError as exc:
+            if unidades_tomadas and isinstance(servicio, AlquilerEquipo):
+                servicio.liberar_unidades(unidades_tomadas)   # rollback
             self._fallo(contexto, exc)
             reserva = None
         except Exception as exc:
+            if unidades_tomadas and isinstance(servicio, AlquilerEquipo):
+                servicio.liberar_unidades(unidades_tomadas)
             self._fallo(f"Error inesperado en {contexto}", exc)
             reserva = None
         else:
@@ -758,6 +768,7 @@ class SistemaGestion:
         finally:
             log.debug(f"Intento de reserva finalizado: {contexto}")
         return reserva
+
 
     def procesar_reserva(self, reserva: Optional[Reserva]) -> bool:
         try:
@@ -843,7 +854,7 @@ def simular() -> None:
     sistema.registrar_cliente("Ana Torres", "ana.torres@mail.com", "0991234567", "1712345678")
 
     paso(2, "Registro de cliente válido")
-    sistema.registrar_cliente("luis pérez", "luis.perez@fj.io", "+573987654321", "0923456789")
+    sistema.registrar_cliente("luis pérez", "luis.perez@fj.io", "+573287654321", "0923456789")
 
     paso(3, "Registro de cliente INVÁLIDO (correo mal formado)")
     sistema.registrar_cliente("Carla Ruiz", "carla@@mail", "0998887777", "1105678901")
