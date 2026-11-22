@@ -1,7 +1,7 @@
 # Software FJ – Sistema de Gestión de Clientes, Servicios y Reservas
 
 > Proyecto académico de Programación Orientada a Objetos y Manejo Avanzado de Excepciones.
-> **Un solo archivo standalone (`software_fj.py`), sin bases de datos.**
+> **Un solo archivo standalone (`software_fj.python`), sin bases de datos.**
 
 ---
 
@@ -27,11 +27,12 @@ todos los eventos y errores.
 - Sin dependencias externas (solo biblioteca estándar).
 
 ```bash
-python software_fj.py
+python software_fj.python
 ```
 
-Al finalizar se muestra en consola un reporte y se genera/actualiza `logs.txt`
-en el mismo directorio.
+> El intérprete de Python ejecuta el archivo sin importar su extensión, por lo que
+> `software_fj.python` funciona igual que cualquier script. Al finalizar se muestra
+> un reporte en consola y se genera/actualiza `logs.txt` en el mismo directorio.
 
 ---
 
@@ -50,7 +51,7 @@ SistemaGestion (fachada) ──► listas internas de clientes, servicios y rese
 SoftwareFJError (jerarquía de excepciones personalizadas)
 ```
 
-### 3.1 Secciones del archivo `software_fj.py`
+### 3.1 Secciones del archivo `software_fj.python`
 
 | Sección | Contenido |
 |---|---|
@@ -61,7 +62,7 @@ SoftwareFJError (jerarquía de excepciones personalizadas)
 | 5 | `Servicio`: clase abstracta + métodos sobrecargados de costo |
 | 6 | Servicios especializados (herencia y polimorfismo) |
 | 7 | `Reserva`: ciclo de vida con confirmación, procesamiento y cancelación |
-| 8 | `SistemaGestion`: orquestación tolerante a fallos |
+| 8 | `SistemaGestion`: orquestación tolerante a fallos con *rollback* de stock |
 | 9 | `simular()`: 20 operaciones válidas e inválidas |
 | 10 | Punto de entrada con red de seguridad `try/except/finally` |
 
@@ -106,7 +107,9 @@ SoftwareFJError (jerarquía de excepciones personalizadas)
 
 ```
 crear_reserva()
-    │  busca cliente → busca servicio → reserva stock (si es equipo)
+    │  busca cliente → busca servicio → construye Reserva (valida disponibilidad
+    │  y duración) → descuenta stock (si es equipo) → confirmar()
+    │  Si algo falla después de descontar stock → liberar_unidades() (rollback)
     ▼
 PENDIENTE ──confirmar()──► CONFIRMADA ──procesar()──► PROCESADA
     │                          │
@@ -139,6 +142,9 @@ Reglas:
 | `OperacionNoPermitidaError` | FJ-402 | Transición de estado inválida |
 | `CalculoError` | FJ-500 | IVA/descuento fuera de rango, total negativo, tipo no soportado |
 
+Los códigos `FJ-xxx` son una convención propia del proyecto (prefijo = nombre de la
+empresa, centena = categoría, igual que los códigos HTTP) para filtrar errores en el log.
+
 ### 6.2 Estructuras utilizadas
 
 | Estructura | Dónde |
@@ -148,89 +154,92 @@ Reglas:
 | `try/except/finally` | `crear_reserva`, `Reserva.procesar`, bloque `__main__` |
 | Encadenamiento (`raise ... from`) | `Reserva.validar`, `Reserva.confirmar`, `registrar_servicio` (TypeError → ValidacionError) |
 
-### 6.3 Formas de generar un error
-
-| Categoría | Ejemplos que lo disparan |
-|---|---|
-| **Datos inválidos de cliente** | Nombre vacío/con dígitos, correo mal formado, teléfono o documento fuera de rango |
-| **Cliente duplicado / inexistente** | Mismo documento dos veces; reservar con documento no registrado |
-| **Servicio mal creado** | Precio ≤ 0, capacidad 0, stock negativo, nivel desconocido, clase que no es `Servicio` |
-| **Parámetros faltantes** | `registrar_servicio(AlquilerEquipo, "Proyector")` sin el resto de argumentos |
-| **Servicio no disponible** | `disponible=False` o stock agotado |
-| **Reserva incorrecta** | Duración fuera de rango, duración no entera, cliente/servicio no válidos |
-| **Cálculos inconsistentes** | Descuento > 100 %, IVA > 1, tipo de parámetro no soportado |
-| **Operación no permitida** | Procesar dos veces, cancelar una procesada, confirmar una no pendiente |
-| **Reserva inexistente** | Procesar o cancelar `None` (resultado de una reserva fallida) |
-| **Error inesperado** | Cualquier excepción no prevista es capturada por `except Exception` en la fachada y en `__main__` |
-
 **Ningún error detiene la ejecución**: la fachada captura, registra en `logs.txt`,
 incrementa el contador de operaciones fallidas y continúa con la siguiente operación.
 
 ---
 
-## 7. Archivo `logs.txt`
+## 7. Cómo se probaron los errores que aparecen en `logs.txt`
 
-Formato de cada línea:
+Las pruebas se realizaron **desde la propia función `simular()`** de
+`software_fj.python`: cada error del log fue provocado intencionalmente con una
+entrada inválida controlada, y se verificó que (a) el sistema no se detuviera,
+(b) el error quedara registrado con su código `FJ-xxx` y (c) el resto de operaciones
+continuara con normalidad.
 
+| Paso | Entrada de prueba usada en `simular()` | Qué se quería comprobar | Línea resultante en `logs.txt` |
+|---|---|---|---|
+| 3 | `registrar_cliente("Carla Ruiz", "carla@@mail", ...)` | Regex de correo del setter `correo` | `ValidacionError [FJ-100] Correo electrónico inválido` |
+| 4 | `registrar_cliente("Pedro 123", ...)` | Setter `nombre` rechaza dígitos | `ValidacionError [FJ-100] El nombre no puede contener dígitos` |
+| 5 | Segundo cliente con documento `1712345678` | Detección de duplicados antes de construir el objeto | `ClienteDuplicadoError [FJ-201]` |
+| 7a | `registrar_servicio(ReservaSala, "Sala Negativa", -10.0, 5)` | Validación de precio en el constructor de `Servicio` | `ValidacionError [FJ-100] El precio base debe ser positivo (-10.0)` |
+| 7b | `registrar_servicio(AsesoriaEspecializada, ..., "master")` | Validación de nivel en la subclase | `ValidacionError [FJ-100] Nivel 'master' inválido` |
+| 7c | `registrar_servicio(AlquilerEquipo, "Proyector")` (faltan 3 argumentos) | Captura de `TypeError` de Python y encadenamiento al dominio | `ValidacionError [FJ-100] Parámetros faltantes \| CAUSA: TypeError: missing 3 required positional arguments` |
+| 10 | `crear_reserva("9999999999", "Sala Pamplona", 2)` | `buscar_cliente` con documento inexistente | `ClienteNoEncontradoError [FJ-202]` |
+| 11 | `crear_reserva(..., "Laptop Dell", 3, cantidad_equipos=1)` después de que el paso 9 agotara las 2 unidades | Servicio marcado `disponible=False` por stock 0 | `ServicioNoDisponibleError [FJ-301] El servicio 'Laptop Dell' no está disponible` |
+| 12 | `crear_reserva(..., "Asesoría Legacy", 2)` (servicio creado con `disponible=False`) | Verificación de disponibilidad en el constructor de `Reserva` | `ServicioNoDisponibleError [FJ-301] no está disponible` |
+| 13 | `crear_reserva(..., "Sala Pamplona", 20)` | Duración fuera del rango 1–12 h con **encadenamiento** `raise ... from` | `ReservaInvalidaError [FJ-401] \| CAUSA: ValidacionError [FJ-100] entre 1 y 12 horas (solicitado: 20)` |
+| 14 | `crear_reserva(..., "Asesoría Cloud", 2, descuento_pct=150)` | Cálculo inconsistente encadenado desde `confirmar()` | `ReservaInvalidaError [FJ-401] No fue posible calcular el costo \| CAUSA: CalculoError [FJ-500] Descuento inconsistente: 150 %` |
+| 16a | `procesar_reserva(r1)` por segunda vez | Transición de estado no permitida | `OperacionNoPermitidaError [FJ-402] Solo se procesan reservas CONFIRMADAS (actual: PROCESADA)` |
+| 16b | `procesar_reserva(None)` | Manejo de reserva inexistente | `ReservaError [FJ-400] No se puede procesar una reserva inexistente (None)` |
+| 17 | `cancelar_reserva(r1, ...)` con `r1` ya procesada | Regla de negocio: no cancelar lo procesado | `OperacionNoPermitidaError [FJ-402] ya fue PROCESADA y no puede cancelarse` |
+| 19a | `cotizar("Sala Pamplona", 2, "veinte")` | Tipo no registrado en `singledispatchmethod` | `CalculoError [FJ-500] Tipo de parámetro no soportado: str` |
+| 19b | `cotizar("Asesoría Cloud", 3, 120.0)` | Rama `float` de la sobrecarga con descuento > 100 | `CalculoError [FJ-500] Descuento inconsistente: 120.0 %` |
+| 20 | `sala.calcular_costo_con_impuesto(2, iva=1.5)` | Parámetro opcional `iva` fuera de rango, capturado en `simular()` | `CalculoError [FJ-500] IVA fuera de rango: 1.5` |
+
+### 7.1 Eventos no-error relevantes del log
+
+| Nivel | Línea | Qué la produce |
+|---|---|---|
+| `WARNING` | `Reserva ... CANCELADA \| motivo: El cliente cambió de fecha` | Paso 17: `cancelar_reserva(r2, ...)`; devuelve 2 laptops al stock |
+| `DEBUG` | `Intento de reserva finalizado: ...` | Bloque `finally` de `crear_reserva`; aparece tanto en éxito como en fallo |
+| `DEBUG` | `Fin de intento de procesamiento ... (estado final: PROCESADA)` **antes** de un `ERROR [FJ-402]` | Bloque `finally` de `Reserva.procesar()`: se ejecuta aunque la excepción se propague a la fachada |
+| `INFO` | `Reporte final \| clientes=2 servicios=4 reservas=4 exitosas=17 fallidas=16` | `SistemaGestion.reporte()` |
+
+### 7.2 Verificación manual de los montos del log
+
+| Reserva / cotización | Fórmula | Total |
+|---|---|---|
+| Sala Pamplona, 3 h, proyector, 10 % dto. | $$(25\cdot3 + 15\cdot3)\cdot0.90\cdot1.15$$ | $124.20 |
+| Laptop Dell, 7 días, 2 unidades, depósito $50 | $$(12.5\cdot7\cdot2 + 50)\cdot0.90\cdot1.15$$ | $232.87 (*) |
+| Asesoría Cloud, 4 h, experto | $$40\cdot4\cdot2.0\cdot1.15$$ | $368.00 |
+| Laptop Dell, 2 días, 1 unidad | $$(12.5\cdot2 + 50)\cdot1.15$$ | $86.25 |
+| Cotización None | $$80\cdot1.15$$ | $92.00 |
+| Cotización 25 % | $$80\cdot0.75\cdot1.15$$ | $69.00 |
+| Cotización dict (IVA 12 %, cupón FJ10) | $$80\cdot0.90\cdot1.12$$ | $80.64 |
+
+(*) El valor exacto es 232.875; `round()` devuelve 232.87 por la representación binaria
+de `float`. Es comportamiento estándar de Python, no un error del sistema.
+
+### 7.3 Comandos útiles para revisar el log
+
+```bash
+grep -c ERROR logs.txt        # cantidad de errores controlados
+grep "CAUSA:" logs.txt        # errores con encadenamiento de excepciones
+grep "FJ-401" logs.txt        # filtrar por código de error
 ```
-AAAA-MM-DD HH:MM:SS | NIVEL    | mensaje
-```
 
-| Nivel | Qué registra |
-|---|---|
-| `INFO` | Inicio/fin del sistema, registros exitosos, confirmaciones, procesamientos, reporte |
-| `WARNING` | Cancelaciones de reservas |
-| `DEBUG` | Auditoría de bloques `finally` (fin de intentos) |
-| `ERROR` | Toda excepción controlada, con su `CAUSA:` encadenada si existe |
-
-Ejemplo:
-
-```
-2026-11-22 13:15:02 | ERROR    | Reserva de 'Sala Quito' para doc 0923456789 -> ReservaInvalidaError: [FJ-401] Parámetros de reserva incorrectos para 'Sala Quito'. | CAUSA: ValidacionError: [FJ-100] La sala se reserva entre 1 y 12 horas (solicitado: 20).
-```
-
-El archivo se abre en modo *append*, por lo que conserva el historial de ejecuciones.
+En Windows (PowerShell): `Select-String ERROR logs.txt`.
 
 ---
 
-## 8. Simulación incluida (20 pasos)
+## 8. Historial de correcciones
 
-| Pasos | Qué demuestra |
+| Versión | Cambio |
 |---|---|
-| 1–2 | Registro válido de clientes |
-| 3–5 | Clientes inválidos: correo, nombre con dígitos, duplicado |
-| 6 | Creación correcta de los tres tipos de servicio (+ uno deshabilitado) |
-| 7 | Servicios incorrectos: precio negativo, nivel inválido, parámetros faltantes |
-| 8–9 | Reservas exitosas de sala y equipo (agota stock) |
-| 10–14 | Reservas fallidas: cliente inexistente, sin stock, deshabilitado, duración fuera de rango, descuento inconsistente |
-| 15 | Reserva exitosa de asesoría |
-| 16 | Procesamiento válido, repetido (no permitido) y de `None` |
-| 17 | Cancelación válida y cancelación de una reserva procesada (no permitida) |
-| 18 | Nueva reserva tras liberar stock por cancelación |
-| 19–20 | Métodos sobrecargados con tipos válidos e inválidos |
-
-Al final se imprime un **reporte** con clientes, servicios, reservas, ingresos
-procesados y el conteo de operaciones exitosas/fallidas.
+| 1.0 | Versión inicial del sistema standalone |
+| 1.1 | **Fix en `crear_reserva`:** la `Reserva` se construía después de descontar stock, por lo que al agotar las unidades el servicio quedaba `disponible=False` y una reserva válida fallaba. Se reordenó el flujo (validar → descontar → confirmar) y se agregó *rollback* con `liberar_unidades()` ante cualquier excepción. Resultado en el log: `reservas=2/exitosas=13/fallidas=20` → `reservas=4/exitosas=17/fallidas=16`. |
 
 ---
 
 ## 9. Cómo extender el sistema
 
-1. **Nuevo servicio:** crear una clase que herede de `Servicio` e implemente
-   `calcular_costo`, `validar_parametros`, `describir` y `unidad_tiempo`.
-   Registrarlo con `sistema.registrar_servicio(NuevaClase, ...)`.
+1. **Nuevo servicio:** heredar de `Servicio` e implementar `calcular_costo`,
+   `validar_parametros`, `describir` y `unidad_tiempo`; registrarlo con
+   `sistema.registrar_servicio(NuevaClase, ...)`.
 2. **Nueva excepción:** heredar de la rama adecuada de `SoftwareFJError`
-   y asignar un código `FJ-xxx`.
+   y asignar un código `FJ-xxx` siguiendo la numeración por categoría.
 3. **Nueva variante de costo:** registrar otro tipo con
    `@Servicio.calcular_costo_total.register(tipo)`.
 
 ---
-
-## 10. Estructura sugerida del repositorio
-
-```
-software-fj/
-├── software_fj.py   # aplicación completa (standalone)
-├── README.md          # este documento
-└── logs.txt         # generado automáticamente al ejecutar
-```
